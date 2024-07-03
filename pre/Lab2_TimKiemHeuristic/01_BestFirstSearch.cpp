@@ -1,9 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
 
 #define ROWS 3
 #define COLS 3
 #define EMPTY 0
+#define MaxOperator 4
 #define Maxlength 500
 
 typedef struct {
@@ -122,11 +128,11 @@ int heuristic(State cur_state, State goal){
 	int row, col, count = 0;
 	for(row = 0; row < ROWS; row++){
 		for(col = 0; col < COLS; col++){
-			if(cur_state.eightPuzzel[row][col] != start.eightPuzzel[row][col])
+			if(cur_state.eightPuzzel[row][col] != goal.eightPuzzel[row][col])
 				count++;
 		}
 	}
-	return 0;
+	return count;
 }
 
 struct Node {
@@ -138,13 +144,118 @@ struct Node {
 
 typedef struct Node Node;
 
+Node* findState(State state, vector<Node*> v, vector<Node*>::iterator *position){
+	vector<Node*>::iterator it = v.begin();
+	
+	if(v.size() == 0) return NULL;
+
+	while(it != v.end()){
+		if(compareState((*it)->state, state)){
+			*position = it;
+			return *it;
+		}
+
+		it = v.erase(it);
+	}
+
+	return NULL;
+}
+
+int compareHeuristic(Node* a, Node* b){
+	State goal;
+	goal.emptyRow = 0;
+	goal.emptyCol = 0;
+	goal.eightPuzzel[0][0] = 0;
+	goal.eightPuzzel[0][1] = 1;
+	goal.eightPuzzel[0][2] = 2;
+	goal.eightPuzzel[1][0] = 3;
+	goal.eightPuzzel[1][1] = 4;
+	goal.eightPuzzel[1][2] = 5;
+	goal.eightPuzzel[2][0] = 6;
+	goal.eightPuzzel[2][1] = 7;
+	goal.eightPuzzel[2][2] = 8;
+
+	return heuristic(a->state, goal) > heuristic(b->state, goal);
+}
+
+Node* BestFirstSearch(State start, State goal){
+	vector<Node*> openList(Maxlength);
+	openList.clear();
+	vector<Node*> closeList(Maxlength);
+	closeList.clear();
+
+	Node* root = (Node*)malloc(sizeof(Node));
+	root->state = start;
+	root->parent = NULL;
+	root->no_function = 0;
+	root->heuristic = heuristic(root->state, goal);
+
+	openList.push_back(root);
+
+	while(!openList.empty()){
+		Node* node = openList.back();
+		openList.pop_back();
+
+		closeList.push_back(node);
+
+		if(goalCheck(node->state, goal)) return node;
+
+		int opt;
+		for(opt = 1; opt <= MaxOperator; opt++){
+			State newState = node->state;
+
+			if(callOperator(node->state, &newState, opt)){
+
+				Node *newNode = (Node*)malloc(sizeof(Node));
+				newNode->state = newState;
+				newNode->parent = node;
+				newNode->no_function = opt;
+				newNode->heuristic = heuristic(newNode->state, goal);
+
+				vector<Node*>::iterator posOpenList, posCloseList;
+				Node* nodeFoundOpen = findState(newState, openList, &posOpenList);
+				Node* nodeFoundClose = findState(newState, closeList, &posCloseList);
+				
+				if(nodeFoundOpen == NULL && nodeFoundClose == NULL){
+					openList.push_back(newNode);
+				} else if(nodeFoundOpen != NULL && nodeFoundOpen->heuristic > newNode->heuristic){
+					openList.erase(posOpenList);
+					openList.push_back(newNode);
+				} else if(nodeFoundClose != NULL && nodeFoundClose->heuristic > newNode->heuristic){
+					closeList.erase(posCloseList);
+					closeList.push_back(newNode);
+				}
+
+				sort(openList.begin(), openList.end(), compareHeuristic);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+void printWaysToGetGoal(Node *node){
+	vector<Node*> path;
+
+	while(node->parent != NULL){
+		path.push_back(node);
+		node = node->parent;
+	}
+	path.push_back(node);
+
+	int no_action = 0, i;
+	for(i = path.size() - 1; i >= 0; i--){
+		printf("\nAction %d: %s", no_action, action[path.at(i)->no_function]);
+		printState(path.at(i)->state);
+		no_action++;
+	}
+}
 
 
 
 int main(){
 
-	State start, res_state;
-
+	State start;
 	start.emptyRow = 1;
 	start.emptyCol = 1;
 	start.eightPuzzel[0][0] = 3;
@@ -157,14 +268,24 @@ int main(){
 	start.eightPuzzel[2][1] = 7;
 	start.eightPuzzel[2][2] = 8;
 
-	printState(start);
-	int opt;
-	for(opt = 1; opt <= 4; opt++){
-		if(callOperator(start, &res_state, opt)){
-			printf("Hanh dong %s thanh cong", action[opt]);
-			printState(res_state);
-		} else printf("Hanh dong %s KHONG thanh cong", action[opt]);
-	}
+	State goal;
+	goal.emptyRow = 0;
+	goal.emptyCol = 0;
+	goal.eightPuzzel[0][0] = 0;
+	goal.eightPuzzel[0][1] = 1;
+	goal.eightPuzzel[0][2] = 2;
+	goal.eightPuzzel[1][0] = 3;
+	goal.eightPuzzel[1][1] = 4;
+	goal.eightPuzzel[1][2] = 5;
+	goal.eightPuzzel[2][0] = 6;
+	goal.eightPuzzel[2][1] = 7;
+	goal.eightPuzzel[2][2] = 8;
+
+	Node* node = BestFirstSearch(start, goal);
+
+	printWaysToGetGoal(node);
+
+	printState(node->state);
 
 	return 0;
 }

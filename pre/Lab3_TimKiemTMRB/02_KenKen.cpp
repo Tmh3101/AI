@@ -163,6 +163,23 @@ void printKenKen(KenKen kenKen){
 	printf("-----------------\n");
 }
 
+void printRage(KenKen kenKen){
+	printf("NumsRage:\n");
+	for(int i = 0; i < NB_Rows; i++){
+		if(i % AreaSquareSize == 0) printf("-----------------\n");
+		for(int j = 0; j < NB_Columns; j++){
+			if(j % AreaSquareSize == 0) printf("| ");
+			printf("%d ", kenKen.numsRage[i][j]);
+		}
+		printf("|\n");
+	}
+	printf("-----------------\n");
+
+	for(int i = 0; i < (int)kenKen.rageList.size(); i++){
+		printf("%d: %d%c\n", i + 1, kenKen.rageList.at(i).result, kenKen.rageList.at(i).opr);
+	}
+}
+
 int getRageNumber(Coord pos, vector<Rage> rageList){
 	for(int i = 0; i < (int)rageList.size(); i++){ // duyệt qua các rage trong rageList
 		vector<Coord> listCoord = rageList.at(i).listCoord;
@@ -435,6 +452,7 @@ int main(){
 	}
 
 	printKenKen(kenKen);
+	printRage(kenKen);
 	KenKen result = solveKenKen(kenKen);
 	printKenKen(result);
 

@@ -18,6 +18,8 @@ typedef struct {
 	int emptyCol;
 } State;
 
+State goal;
+
 const char* action[] = {
 	"First State",
 	"Move cell EMPTY to UP",
@@ -162,19 +164,6 @@ Node* findState(State state, vector<Node*> v, vector<Node*>::iterator *position)
 }
 
 int compareHeuristic(Node* a, Node* b){
-	State goal;
-	goal.emptyRow = 0;
-	goal.emptyCol = 0;
-	goal.eightPuzzel[0][0] = 0;
-	goal.eightPuzzel[0][1] = 1;
-	goal.eightPuzzel[0][2] = 2;
-	goal.eightPuzzel[1][0] = 3;
-	goal.eightPuzzel[1][1] = 4;
-	goal.eightPuzzel[1][2] = 5;
-	goal.eightPuzzel[2][0] = 6;
-	goal.eightPuzzel[2][1] = 7;
-	goal.eightPuzzel[2][2] = 8;
-
 	return heuristic(a->state, goal) > heuristic(b->state, goal);
 }
 
@@ -252,7 +241,6 @@ void printWaysToGetGoal(Node *node){
 }
 
 
-
 int main(){
 
 	State start;
@@ -268,7 +256,6 @@ int main(){
 	start.eightPuzzel[2][1] = 7;
 	start.eightPuzzel[2][2] = 8;
 
-	State goal;
 	goal.emptyRow = 0;
 	goal.emptyCol = 0;
 	goal.eightPuzzel[0][0] = 0;

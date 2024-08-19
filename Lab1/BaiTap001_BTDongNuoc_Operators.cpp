@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #define tankcapacity_X 9
 #define tankcapacity_Y 4
 #define empty 0
@@ -8,13 +10,13 @@ typedef struct {
 	int x, y;
 } State;
 
-void makeNullState(State state){
+void makeNullState(State *state){
 	state->x = 0;
 	state->y = 0;
 }
 
 void print_State(State state){
-	printf("\n 		X:%d --- Y:%d", state.x, state.y);
+	printf("\n     X:%d --- Y:%d", state.x, state.y);
 }
 
 int goalcheck(State state){
@@ -95,4 +97,31 @@ int call_operator(State cur_state, State *result, int option){
 			printf("Error calls operators");
 			return 0;
 	}
+}
+
+const char* action[] = {
+	"First State",
+	"pour Water Full X",
+	"pour Water Full Y",
+	"pour Water Empty X",
+	"pour Water Empty Y",
+	"pour Water X to Y",
+	"pour Water Y to X"
+};
+
+int main(){
+	State cur_state = {5, 4}, result;
+	printf("Trang thai bat dau");
+	print_State(cur_state);
+	for(int opt = 1; opt <= 6; opt++){
+		int thuchien = call_operator(cur_state, &result, opt);
+		if(thuchien == 1){
+			printf("\nHanh dong %s thanh cong", action[opt]);
+			print_State(result);
+		} else {
+			printf("\nHanh dong %s KHONG thanh cong", action[opt]);
+		}
+	}
+
+	return 0;
 }

@@ -50,7 +50,6 @@ int compareState(State state1, State state2){
 	return 1;
 }
 
-
 int goalCheck(State state, State goal){
 	return compareState(state, goal);
 }
@@ -195,7 +194,6 @@ bool compareHeristic(Node* a, Node* b){
 	return a->heuristic > b->heuristic;
 }
 
-
 Node* best_first_search(State state, State goal){
 	vector<Node*> Open_BFS(Maxlength);
 	Open_BFS.clear();
@@ -211,7 +209,7 @@ Node* best_first_search(State state, State goal){
 	Open_BFS.push_back(root);
 	while(!Open_BFS.empty()){
 		Node* node = Open_BFS.back();
-		printf("%d\n", node->heuristic);
+
 		Open_BFS.pop_back();
 		Close_BFS.push_back(node);
 
@@ -268,7 +266,6 @@ void print_WaysToGetGoal(Node* node){
 
 int main(){
 	State state;
-
 	state.emptyRow = 1;
 	state.emptyCol = 1;
 	state.eightPuzzel[0][0] = 3;

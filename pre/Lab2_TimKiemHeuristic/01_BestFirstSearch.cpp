@@ -212,7 +212,7 @@ Node* BestFirstSearch(State start, State goal){
 					openList.push_back(newNode);
 				} else if(nodeFoundClose != NULL && nodeFoundClose->heuristic > newNode->heuristic){
 					closeList.erase(posCloseList);
-					closeList.push_back(newNode);
+					openList.push_back(newNode);
 				}
 
 				sort(openList.begin(), openList.end(), compareHeuristic);

@@ -107,7 +107,7 @@ int rightOperator(State state, State *result){
 	int emptyRowCurrent = state.emptyRow;
 	int emptyColCurrent = state.emptyCol;
 
-	if(emptyColCurrent < COLS){
+	if(emptyColCurrent < COLS - 1){
 		result->emptyRow = emptyRowCurrent;
 		result->emptyCol = emptyColCurrent + 1;
 		result->eightPuzzel[emptyRowCurrent][emptyColCurrent] = state.eightPuzzel[emptyRowCurrent][emptyColCurrent + 1];
@@ -272,7 +272,7 @@ int main(){
 	state.eightPuzzel[0][1] = 4;
 	state.eightPuzzel[0][2] = 5;
 	state.eightPuzzel[1][0] = 1;
-	state.eightPuzzel[1][1] = 0;
+	state.eightPuzzel[1][1] = 0; 
 	state.eightPuzzel[1][2] = 2;
 	state.eightPuzzel[2][0] = 6;
 	state.eightPuzzel[2][1] = 7;

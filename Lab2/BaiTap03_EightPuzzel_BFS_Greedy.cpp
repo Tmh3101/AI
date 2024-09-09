@@ -168,6 +168,10 @@ int heuristic2(State state, State goal){
 	return cnt;
 }
 
+int heuristic(State state, State goal){
+	return heuristic1(state, goal);
+}
+
 typedef struct Node {
 	State state;
 	struct Node* parent;
@@ -204,7 +208,7 @@ Node* best_first_search(State state, State goal){
 	root->state = state;
 	root->parent = NULL;
 	root->no_function = 0;
-	root->heuristic = heuristic1(root->state, goal);
+	root->heuristic = heuristic(root->state, goal);
 
 	Open_BFS.push_back(root);
 	while(!Open_BFS.empty()){
@@ -223,7 +227,7 @@ Node* best_first_search(State state, State goal){
 				newNode->state = newState;
 				newNode->parent = node;
 				newNode->no_function = opt;
-				newNode->heuristic = heuristic1(newNode->state, goal);
+				newNode->heuristic = heuristic(newNode->state, goal);
 
 				vector<Node*>::iterator pos_Open, pos_Close;
 				Node* nodeFoundOpen = findState(newNode->state, Open_BFS, &pos_Open);

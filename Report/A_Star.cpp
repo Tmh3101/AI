@@ -7,20 +7,18 @@
 
 using namespace std;
 
-/* Khai báo kiểu cấu trúc Edge
- * - Điểm đầu và cuối của cung
- * - Trọng số cung: chi phí của đường đi
- */
+// Khai báo kiểu cấu trúc Edge
+// - Điểm đầu và cuối của cung
+// - Trọng số cung: chi phí của đường đi
 typedef struct {
 	char u, v;
 	int g;
 } Edge;
 
-/* Khai báo kiểu cấu trúc Map
- * - Danh sách các điểm
- * - Danh sách hueristic của từng điểm
- * - Danh sách đường đi
- */
+// Khai báo kiểu cấu trúc Map
+// - Danh sách các điểm
+// - Danh sách hueristic của từng điểm
+// - Danh sách đường đi
 typedef struct {
 	vector<char> point_list;
 	vector<int> h_list;
@@ -34,12 +32,11 @@ void init_map(Map *map){
 	map->edge_list.clear();
 }
 
-/* Đọc dữ liệu từ file cấu hình
- * - Dòng đầu tiên chưa n và m (n - số đỉnh, m - số cung)
- * - n dòng tiếp theo: tên các đỉnh (kiểu char) và heristic của đỉnh đó
- * - m dòng tiếp theo: danh sách cung với trọng số (g)
- * - dòng cuối cùng chứa 2 điểm: start và goal - cho biết điểm bắt đầu và kết thúc
- */
+// Đọc dữ liệu từ file cấu hình
+// - Dòng đầu tiên chưa n và m (n - số đỉnh, m - số cung)
+// - n dòng tiếp theo: tên các đỉnh (kiểu char) và heristic của đỉnh đó
+// - m dòng tiếp theo: danh sách cung với trọng số (g)
+// - dòng cuối cùng chứa 2 điểm: start và goal - cho biết điểm bắt đầu và kết thúc
 void readFileTxt(string filename, Map *map, char *start, char *goal){ 
 	freopen(filename.c_str(), "r", stdin);
 
@@ -69,11 +66,10 @@ void readFileTxt(string filename, Map *map, char *start, char *goal){
 	scanf("%c %c", start, goal);
 }
 
-/* Khai báo kiểu cấu trúc Node - lưu trữ trạng thái 
- * - Điểm
- * - Node cha
- * - hueristic và chi phí hiện tại
- */
+// Khai báo kiểu cấu trúc Node - lưu trữ trạng thái 
+// - Điểm
+// - Node cha
+// - hueristic và chi phí hiện tại
 typedef struct Node {
 	char point;
 	struct Node* parent;

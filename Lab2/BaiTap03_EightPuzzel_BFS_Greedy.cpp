@@ -180,7 +180,7 @@ typedef struct Node {
 } Node;
 
 Node* findState(State state, vector<Node*> v, vector<Node*>::iterator *position){
-	if(v.size() == 0) return NULL;
+	if(v.empty()) return NULL;
 
 	vector<Node*>::iterator it = v.begin();
 	while(it != v.end()){

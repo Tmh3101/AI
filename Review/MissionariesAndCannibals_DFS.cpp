@@ -34,95 +34,75 @@ int compareState(State state1, State state2){
 }
 
 int isValidState(State state){
-	return !(state.M > 0 && state.M < state.C)
-		&& !(numberOfMissionaries - state.M > 0 && numberOfMissionaries - state.M < numberOfCannibals - state.C);
+	if(state.M < 0 || state.C < 0 || state.M > 3 || state.C > 3)
+		return 0;
+	if(state.M > 0 && state.M < state.C)
+		return 0;
+	if(numberOfMissionaries - state.M > 0 && numberOfMissionaries - state.M < numberOfCannibals - state.C)
+		return 0;
+	return 1;
 }
 
 int Move1M(State state, State *result){
 	*result = state;
-	if(state.B == BankA && state.M >= 1){
+	if(state.B == BankA){
 		result->M -= 1;
 		result->B = BankB;
-		return isValidState(*result);
-	}
-
-	if(state.B == BankB && numberOfMissionaries - state.M >= 1){
+	} else {
 		result->M += 1;
 		result->B = BankA;
-		return isValidState(*result);
 	}
-
-	return 0;
+	return isValidState(*result);
 }
 
 int Move2M(State state, State *result){
 	*result = state;
-	if(state.B == BankA && state.M >= 2){
+	if(state.B == BankA){
 		result->M -= 2;
 		result->B = BankB;
-		return isValidState(*result);
-	}
-
-	if(state.B == BankB && numberOfMissionaries - state.M >= 2){
+	} else {
 		result->M += 2;
 		result->B = BankA;
-		return isValidState(*result);
 	}
-
-	return 0;
+	return isValidState(*result);
 }
 
 int Move1C(State state, State *result){
 	*result = state;
-	if(state.B == BankA && state.C >= 1){
+	if(state.B == BankA){
 		result->C -= 1;
 		result->B = BankB;
-		return isValidState(*result);
-	}
-
-	if(state.B == BankB && numberOfCannibals - state.C >= 1){
+	} else {
 		result->C += 1;
 		result->B = BankA;
-		return isValidState(*result);
 	}
-
-	return 0;
+	return isValidState(*result);
 }
 
 int Move2C(State state, State *result){
 	*result = state;
-	if(state.B == BankA && state.C >= 2){
+	if(state.B == BankA){
 		result->C -= 2;
 		result->B = BankB;
-		return isValidState(*result);
-	}
-
-	if(state.B == BankB && numberOfCannibals - state.C >= 2){
+	} else {
 		result->C += 2;
 		result->B = BankA;
-		return isValidState(*result);
 	}
-
-	return 0;
+	return isValidState(*result);
 }
 
 int Move1M1C(State state, State *result){
 	*result = state;
-	if(state.B == BankA && state.M >= 1 && state.C >= 1){
+	if(state.B == BankA){
 		result->M -= 1;
 		result->C -= 1;
 		result->B = BankB;
-		return isValidState(*result);
-	}
-
-	if(state.B == BankB && numberOfMissionaries - state.M >= 1 && numberOfCannibals - state.C >= 1){
+	} else {
 		result->M += 1;
 		result->C += 1;
 		result->B = BankA;
-		return isValidState(*result);
 	}
-
-	return 0;
+	return isValidState(*result);
 }
 
 int callOperators(State state, State *result, int opt){
@@ -177,7 +157,7 @@ Node* DFS(State state){
 		Node* node = openList.top();
 		openList.pop();
 		closeList.push(node);
-
+		
 		if(isGoal(node->state)) return node;
 
 		for(int opt = 1; opt <= 5; opt++){
@@ -200,11 +180,10 @@ Node* DFS(State state){
 
 void printWaysToGoal(Node *node){
 	stack<Node*> path;
-	while(node->parent != NULL){
+	while(node != NULL){
 		path.push(node);
 		node = node->parent;
 	}
-	path.push(node);
 
 	int action_stt = 0;
 	while(!path.empty()){
@@ -221,6 +200,17 @@ int main(){
 
 	printWaysToGoal(DFS(state));
 
+	printf("\n\n\n");
+	State result;
+	printf("Trang thai bat dau\n");
+	printState(state);
+	for(int opt = 1; opt<=5; opt++){
+		int thuchien = callOperators(state, &result, opt);
+		if(thuchien == 1){
+			printf("Hanh dong %s thanh cong\n", action[opt] );
+			printState(result);
+		} else printf("Hanh dong %s KHONG thanh cong\n", action[opt]);
+	}
 
 	return 0;
 }

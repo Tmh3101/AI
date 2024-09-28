@@ -4,71 +4,56 @@
 
 using namespace std;
 
-#define ROWS 4
-#define COLS 4
-#define X_Start 0
-#define Y_Start 0
-#define X_Goal 3
-#define Y_Goal 3
+#define MAX_ROWS 10
+#define MAX_COLS 10
 
 typedef struct {
-	int maze[ROWS][COLS];
-	int xRobot, yRobot;
+	int row, col;
+	int maze[MAX_ROWS][MAX_COLS];
+	int rowRobot, colRobot;
 } State;
 
-void initState(State *state, int maze[ROWS][COLS]){
-	for(int i = 0; i < ROWS; i++){
-		for(int j = 0; j < COLS; j++){
+void initState(State *state, int maze[MAX_ROWS][MAX_COLS], int row, int col){
+	state->row = row;
+	state->col = col;
+	for(int i = 0; i < row; i++){
+		for(int j = 0; j < col; j++){
 			state->maze[i][j] = maze[i][j];
+			if(maze[i][j] == 2){
+				state->rowRobot = i;
+				state->colRobot = j;
+			}
 		}
 	}
-	state->xRobot = X_Start;
-	state->yRobot = Y_Start;
 }
 
 void printState(State state){
 	printf("\n");
-	for(int i = 0; i < ROWS; i++){
-		for(int j = 0; j < COLS; j++){
-			if(i == state.xRobot && j == state.yRobot)
+	for(int i = 0; i < state.row; i++){
+		for(int j = 0; j < state.col; j++){
+			if(i == state.rowRobot && j == state.colRobot)
 				printf("X ");
 			else printf("%d ", state.maze[i][j]);
 		}
 		printf("\n");
 	}
-	printf("Robot Position: (%d, %d)\n", state.xRobot, state.yRobot);
+	printf("Robot Position: [%d, %d]\n", state.rowRobot, state.colRobot);
 }
 
 int compareState(State state1, State state2){
-	if(state1.xRobot != state2.xRobot)
-		return 0;
-	if(state1.yRobot != state2.yRobot)
-		return 0;
-
-	for(int i = 0; i < ROWS; i++){
-		for(int j = 0; j < COLS; j++){
-			if(state1.maze[i][j] != state2.maze[i][j])
-				return 0;
-		}
-	}
-
-	return 1;
+	return state1.rowRobot == state2.rowRobot
+		&& state1.colRobot == state2.colRobot;
 }
 
 int isGoal(State state){
-	if(state.xRobot != X_Goal)
-		return 0;
-	if(state.yRobot != Y_Goal)
-		return 0;
-	return 1;
+	return state.maze[state.rowRobot][state.colRobot] == 3;
 }
 
 int moveLeft(State state, State *result){
 	*result = state;
-	if(state.yRobot < COLS - 1){
-		if(state.maze[state.xRobot][state.yRobot + 1] == 1){
-			result->xRobot = state.xRobot;
-			result->yRobot = state.yRobot + 1;
+	if(state.colRobot > 0){
+		if(state.maze[state.rowRobot][state.colRobot - 1]){
+			result->colRobot -= 1;
 			return 1;
 		}
 	}
@@ -77,10 +62,9 @@ int moveLeft(State state, State *result){
 
 int moveRight(State state, State *result){
 	*result = state;
-	if(state.yRobot > 0){
-		if(state.maze[state.xRobot][state.yRobot - 1] == 1){
-			result->xRobot = state.xRobot;
-			result->yRobot = state.yRobot - 1;
+	if(state.colRobot < state.col - 1){
+		if(state.maze[state.rowRobot][state.colRobot + 1]){
+			result->colRobot += 1;
 			return 1;
 		}
 	}
@@ -89,10 +73,9 @@ int moveRight(State state, State *result){
 
 int moveUp(State state, State *result){
 	*result = state;
-	if(state.yRobot > 0){
-		if(state.maze[state.xRobot - 1][state.yRobot] == 1){
-			result->xRobot = state.xRobot - 1;
-			result->yRobot = state.yRobot;
+	if(state.rowRobot > 0){
+		if(state.maze[state.rowRobot - 1][state.colRobot]){
+			result->rowRobot -= 1;
 			return 1;
 		}
 	}
@@ -101,10 +84,9 @@ int moveUp(State state, State *result){
 
 int moveDown(State state, State *result){
 	*result = state;
-	if(state.yRobot < ROWS - 1){
-		if(state.maze[state.xRobot + 1][state.yRobot] == 1){
-			result->xRobot = state.xRobot + 1;
-			result->yRobot = state.yRobot;
+	if(state.rowRobot < state.row - 1){
+		if(state.maze[state.rowRobot + 1][state.colRobot]){
+			result->rowRobot += 1;
 			return 1;
 		}
 	}
@@ -159,8 +141,8 @@ Node* DFS(State state){
 	while(!openList.empty()){
 		Node* node = openList.top();
 		openList.pop();
-
 		closeList.push(node);
+
 		if(isGoal(node->state)) return node;
 
 		for(int opt = 1; opt <= 4; opt++){
@@ -199,15 +181,16 @@ void printWaysToGoal(Node *node){
 
 int main(){
 
-	int input[ROWS][COLS] = {
-		{1, 0, 0, 0},
+	int n = 4, m = 4;
+	int input[MAX_ROWS][MAX_COLS] = {
+		{2, 0, 0, 0},
 		{1, 1, 0, 1},
 		{0, 1, 0, 0},
-		{1, 1, 1, 1}
+		{1, 1, 1, 3}
 	};
 
 	State state;
-	initState(&state, input);
+	initState(&state, input, n, m);
 
 	printWaysToGoal(DFS(state));
 	return 0;

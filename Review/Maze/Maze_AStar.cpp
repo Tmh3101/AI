@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stack>
 #include <malloc.h>
+#include <vector>
+#include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -117,50 +120,97 @@ typedef struct Node {
 	State state;
 	struct Node* parent;
 	int no_act;
+	int g;
+	float h;
 } Node;
 
-int findState(State state, stack<Node*> list){
-	while(!list.empty()){
-		if(compareState(state, list.top()->state))
-			return 1;
-		list.pop();
-	}
-	return 0;
+float euclidean(int x_a, int y_a, int x_b, int y_b){
+	return sqrt(pow(x_a - x_b, 2) + pow(y_a - y_b, 2));
 }
 
-Node* DFS(State state){
-	stack<Node*> openList;
-	stack<Node*> closeList;
+float manhattan(int x_a, int y_a, int x_b, int y_b){
+	return abs(x_a - x_b) + abs(y_a - y_b);
+}
+
+float heuristic(State state){
+	int goalRow, goalCol;
+	for(int i = 0; i < state.row; i++){
+		for(int j = 0; j < state.col; j++){
+			if(state.maze[i][j] == 3){
+				goalRow = i;
+				goalCol = j;
+			}
+		}
+	}
+	return manhattan(state.rowRobot, state.colRobot, goalRow, goalCol);
+}
+
+int compare_f(Node* node1, Node* node2){
+	return node1->g + node1->h > node2->g + node2->h;
+}
+
+Node* findState(State state, vector<Node*> list, vector<Node*>::iterator *pos){
+	if(list.empty()) return 0;
+
+	vector<Node*>::iterator it = list.begin();
+	while(it != list.end()){
+		if(compareState((*it)->state, state)){
+			*pos = it;
+			return *it;
+		}
+		it = list.erase(it);
+	}
+	return NULL;
+}
+
+Node* AStar(State state){
+	vector<Node*> openList;
+	vector<Node*> closeList;
 
 	Node* root = (Node*)malloc(sizeof(Node));
 	root->state = state;
 	root->parent = NULL;
 	root->no_act = 0;
+	root->g = 0;
+	root->h = heuristic(root->state);
 
-	openList.push(root);
+	openList.push_back(root);
+
 	while(!openList.empty()){
-		Node* node = openList.top();
-		openList.pop();
-		closeList.push(node);
+		Node* node = openList.back();
+		openList.pop_back();
+		closeList.push_back(node);
 
 		if(isGoal(node->state)) return node;
 
 		for(int opt = 1; opt <= 4; opt++){
 			State newState;
 			if(callOperators(node->state, &newState, opt)){
-				if(findState(newState, openList) || findState(newState, closeList))
-					continue;
-
 				Node* newNode = (Node*)malloc(sizeof(Node));
 				newNode->state = newState;
 				newNode->parent = node;
 				newNode->no_act = opt;
+				newNode->g = node->g + 1;
+				newNode->h = heuristic(newNode->state);
 
-				openList.push(newNode);
+				vector<Node*>::iterator posOpen, posClose;
+				Node* foundOpen = findState(newNode->state, openList, &posOpen);
+				Node* foundClose = findState(newNode->state, closeList, &posClose);
+
+				if(foundOpen == NULL && foundClose == NULL){
+					openList.push_back(newNode);
+				} else if(foundOpen != NULL && foundOpen->g > newNode->g){
+					openList.erase(posOpen);
+					openList.push_back(newNode);
+				} else if(foundClose != NULL && foundClose->g > newNode->g){
+					closeList.erase(posClose);
+					openList.push_back(newNode);
+				}
+
+				sort(openList.begin(), openList.end(), compare_f);
 			}
 		}
 	}
-
 	return NULL;
 }
 
@@ -192,6 +242,6 @@ int main(){
 	State state;
 	initState(&state, input, n, m);
 
-	printWaysToGoal(DFS(state));
+	printWaysToGoal(AStar(state));
 	return 0;
 }

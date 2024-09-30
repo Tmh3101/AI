@@ -1,118 +1,102 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stack>
 #include <vector>
+#include <stdlib.h>
 #include <algorithm>
 
 using namespace std;
 
-#define Max_X 16 
-#define Max_Y 7 
-#define Max_Z 3
-
-#define GOAL 8
+#define BankA 1
+#define BankB 0
 
 typedef struct {
-	int x, y, z;
+	int wolf, goat, cabbage, farmer;
 } State;
 
 void printState(State state){
-	printf("\nX:%d -- Y:%d -- Z:%d\n", state.x, state.y, state.z);
+	printf("\nWolf is on %s", state.wolf ? "BankA" : "BankB");
+	printf("\nGoat is on %s", state.goat ? "BankA" : "BankB");
+	printf("\nCabbage is on %s", state.cabbage ? "BankA" : "BankB");
+	printf("\nFarmer is on %s\n", state.farmer ? "BankA" : "BankB");
 }
 
 int compareState(State state1, State state2){
-	return state1.x == state2.x 
-		&& state1.y == state2.y 
-		&& state1.z == state2.z;
+	return state1.wolf == state2.wolf
+		&& state1.goat == state2.goat
+		&& state1.cabbage == state2.cabbage
+		&& state1.farmer == state2.farmer;
 }
 
 int isGoal(State state){
-	return state.x == GOAL;
+	return state.wolf == BankB
+		&& state.goat == BankB
+		&& state.cabbage == BankB
+		&& state.farmer == BankB;
 }
 
-int pourMilkXY(State state, State *result){
-	if(state.x > 0 && state.y < Max_Y){
-		result->x = max(state.x - (Max_Y - state.y), 0);
-		result->y = min(state.x + state.y, Max_Y);
-		result->z = state.z;
-		return 1;
+int isValidState(State state){
+	if(state.wolf == state.goat && state.farmer != state.wolf)
+		return 0;
+	if(state.goat == state.cabbage && state.farmer != state.goat)
+		return 0;
+	return 1;
+}
+
+int moveWolf(State state, State *result){
+	*result = state;
+	if(state.farmer == state.wolf){
+		result->wolf = !state.wolf;
+		result->farmer = !state.farmer;
+		return isValidState(*result);
 	}
 	return 0;
 }
 
-int pourMilkXZ(State state, State *result){
-	if(state.x > 0 && state.z < Max_Z){
-		result->x = max(state.x - (Max_Y - state.y), 0);
-		result->y = state.y;
-		result->z = min(state.x + state.z, Max_Z);
-		return 1;
+int moveGoat(State state, State *result){
+	*result = state;
+	if(state.farmer == state.goat){
+		result->goat = !state.goat;
+		result->farmer = !state.farmer;
+		return isValidState(*result);
 	}
 	return 0;
 }
 
-int pourMilkYX(State state, State *result){
-	if(state.y > 0 && state.x < Max_X){
-		result->x = min(state.y + state.x, Max_X);
-		result->y = max(state.y - (Max_X - state.x), 0);
-		result->z = state.z;
-		return 1;
+int moveCabbage(State state, State *result){
+	*result = state;
+	if(state.farmer == state.cabbage){
+		result->cabbage = !state.cabbage;
+		result->farmer = !state.farmer;
+		return isValidState(*result);
 	}
 	return 0;
 }
 
-int pourMilkYZ(State state, State *result){
-	if(state.y > 0 && state.z < Max_Z){
-		result->x = state.x;
-		result->y = max(state.y - (Max_X - state.x), 0);
-		result->z = min(state.y + state.z, Max_Z);
-		return 1;
-	}
-	return 0;
+int moveFarmer(State state, State *result){
+	*result = state;
+	result->farmer = !state.farmer;
+	return isValidState(*result);
 }
-
-int pourMilkZX(State state, State *result){
-	if(state.z > 0 && state.x < Max_X){
-		result->x = min(state.z + state.x, Max_X);
-		result->y = state.y;
-		result->z = max(state.z - (Max_X - state.x), 0);
-		return 1;
-	}
-	return 0;
-}
-
-int pourMilkZY(State state, State *result){
-	if(state.z > 0 && state.y < Max_Y){
-		result->x = state.x;
-		result->y = min(state.z + state.y, Max_Y);
-		result->z = max(state.z - (Max_Y - state.y), 0);
-		return 1;
-	}
-	return 0;
-}
-
-const char *actions[] = {
-	"First State",
-	"Pour Milk X To Y",
-	"Pour Milk X To Z",
-	"Pour Milk Y To X",
-	"Pour Milk Y To Z",
-	"Pour Milk Z To X",
-	"Pour Milk Z To Y"
-};
 
 int callOperators(State state, State *result, int opt){
 	switch(opt){
-		case 1: return pourMilkXY(state, result);
-		case 2: return pourMilkXZ(state, result);
-		case 3: return pourMilkYX(state, result);
-		case 4: return pourMilkYZ(state, result);
-		case 5: return pourMilkZX(state, result);
-		case 6: return pourMilkZY(state, result);
+		case 1: return moveWolf(state, result);
+		case 2: return moveGoat(state, result);
+		case 3: return moveCabbage(state, result);
+		case 4: return moveFarmer(state, result);
 		default:
 			printf("Error: CALL OPERATORS");
 			return 0;
 	}
 }
+
+const char *actions[] = {
+	"First State",
+	"Move Wolf",
+	"Move Goat",
+	"Move Cabbage",
+	"Move Farmer"
+};
 
 typedef struct Node {
 	State state;
@@ -122,7 +106,7 @@ typedef struct Node {
 } Node;
 
 int heuristic(State state){
-	return abs(state.x - GOAL);
+	return state.wolf + state.goat + state.cabbage + state.farmer;
 }
 
 Node* findState(State state, vector<Node*> list, vector<Node*>::iterator *pos){
@@ -143,7 +127,7 @@ bool compare_f(Node *node1, Node *node2){
 	return node1->g + node1->h > node2->g + node2->h;
 }
 
-Node* DFS(State state){
+Node* BestFirstSearch(State state){
 	vector<Node*> openList;
 	vector<Node*> closeList;
 
@@ -164,7 +148,7 @@ Node* DFS(State state){
 
 		if(isGoal(node->state)) return node;
 
-		for(int i = 1; i <= 6; i++){
+		for(int i = 1; i <= 4; i++){
 			State newState;
 			if(callOperators(node->state, &newState, i)){
 
@@ -181,10 +165,10 @@ Node* DFS(State state){
 
 				if(foundOpen == NULL && foundClose == NULL){
 					openList.push_back(newNode);
-				} else if(foundOpen != NULL && foundOpen->g > newNode->g){
+				} else if(foundOpen != NULL && foundOpen->g + foundOpen->h > newNode->g + newNode->h){
 					openList.erase(posOpen);
 					openList.push_back(newNode);
-				} else if(foundClose != NULL && foundClose->g > newNode->g){
+				} else if(foundClose != NULL && foundClose->g + foundClose->h > newNode->g + newNode->h){
 					closeList.erase(posClose);
 					openList.push_back(newNode);
 				}
@@ -215,8 +199,8 @@ void printWaysToGoal(Node *node){
 
 int main(){
 
-	State state = {16, 0, 0};
-	printWaysToGoal(DFS(state));
+	State state = {1, 1, 1, 1};
+	printWaysToGoal(BestFirstSearch(state));
 
 	return 0;
 }

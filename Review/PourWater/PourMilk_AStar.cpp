@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stack>
+#include <vector>
 #include <algorithm>
 
 using namespace std;
@@ -41,7 +42,7 @@ int pourMilkXY(State state, State *result){
 
 int pourMilkXZ(State state, State *result){
 	if(state.x > 0 && state.z < Max_Z){
-		result->x = max(state.x - (Max_Y - state.y), 0);
+		result->x = max(state.x - (Max_Z - state.z), 0);
 		result->y = state.y;
 		result->z = min(state.x + state.z, Max_Z);
 		return 1;
@@ -62,7 +63,7 @@ int pourMilkYX(State state, State *result){
 int pourMilkYZ(State state, State *result){
 	if(state.y > 0 && state.z < Max_Z){
 		result->x = state.x;
-		result->y = max(state.y - (Max_X - state.x), 0);
+		result->y = max(state.y - (Max_Z - state.z), 0);
 		result->z = min(state.y + state.z, Max_Z);
 		return 1;
 	}
@@ -117,33 +118,49 @@ typedef struct Node {
 	State state;
 	struct Node* parent;
 	int no_act;
+	int g, h;
 } Node;
 
-int findState(State state, stack<Node*> list){
-	while(!list.empty()){
-		if(compareState(state, list.top()->state))
-			return 1;
-		list.pop();
-	}
-	return 0;
+int heuristic(State state){
+	return abs(state.x - GOAL);
 }
 
-Node* DFS(State state){
-	stack<Node*> openList;
-	stack<Node*> closeList;
+Node* findState(State state, vector<Node*> list, vector<Node*>::iterator *pos){
+	if(list.empty()) return NULL;
+
+	vector<Node*>::iterator it = list.begin();
+	while(it != list.end()){
+		if(compareState(state, (*it)->state)){
+			*pos = it;
+			return *it;
+		}
+		it = list.erase(it);
+	}
+	return NULL;
+}
+
+bool compare_f(Node *node1, Node *node2){
+	return node1->g + node1->h > node2->g + node2->h;
+}
+
+Node* AStar(State state){
+	vector<Node*> openList;
+	vector<Node*> closeList;
 
 	Node *root = (Node*)malloc(sizeof(Node));
 	root->state = state;
 	root->parent = NULL;
 	root->no_act = 0;
+	root->g = 0;
+	root->h = heuristic(root->state);
 
-	openList.push(root);
+	openList.push_back(root);
 	while(!openList.empty()){
 
-		Node* node = openList.top();
-		openList.pop();
+		Node* node = openList.back();
+		openList.pop_back();
 
-		closeList.push(node);
+		closeList.push_back(node);
 
 		if(isGoal(node->state)) return node;
 
@@ -151,15 +168,28 @@ Node* DFS(State state){
 			State newState;
 			if(callOperators(node->state, &newState, i)){
 
-				if(findState(newState, openList) || findState(newState, closeList))
-					continue;
-
 				Node *newNode = (Node*)malloc(sizeof(Node));
 				newNode->state = newState;
 				newNode->parent = node;
 				newNode->no_act = i;
+				newNode->g = node->g + 1;
+				newNode->h = heuristic(newNode->state);
 
-				openList.push(newNode);
+				vector<Node*>::iterator posOpen, posClose;
+				Node* foundOpen = findState(newNode->state, openList, &posOpen);
+				Node* foundClose = findState(newNode->state, closeList, &posClose);
+
+				if(foundOpen == NULL && foundClose == NULL){
+					openList.push_back(newNode);
+				} else if(foundOpen != NULL && foundOpen->g > newNode->g){
+					openList.erase(posOpen);
+					openList.push_back(newNode);
+				} else if(foundClose != NULL && foundClose->g > newNode->g){
+					closeList.erase(posClose);
+					openList.push_back(newNode);
+				}
+
+				sort(openList.begin(), openList.end(), compare_f);
 			}
 		}
 	}
@@ -186,7 +216,7 @@ void printWaysToGoal(Node *node){
 int main(){
 
 	State state = {16, 0, 0};
-	printWaysToGoal(DFS(state));
+	printWaysToGoal(AStar(state));
 
 	return 0;
 }

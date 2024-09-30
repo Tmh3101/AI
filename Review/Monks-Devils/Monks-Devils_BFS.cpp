@@ -1,106 +1,107 @@
 #include <stdio.h>
 #include <stack>
+#include <queue>
 #include <malloc.h>
 
 using namespace std;
 
-#define numberOfMissionaries 3
-#define numberOfCannibals 3
-#define BankA 0
-#define BankB 1
+#define numberOfMonks 3
+#define numberOfDevils 3
+#define BankA 1
+#define BankB 0
 
 typedef struct {
-	int M; //Number of missionaries on BankA.
-	int C; //Number of cannibals on BankA.
-	int B; // position of the boat (BankA - 1 or BankB - 2).
+	int monks; //Number of monks on BankA.
+	int devils; //Number of devils on BankA.
+	int boat; // position of the boat (BankA - 1 or BankB - 2).
 } State;
 
 void printState(State state){
-	printf("\nMissionaries on BankA: %d", state.M);
-	printf("\nCannibals on BankA: %d", state.C);
-	printf("\nBoat is on %s\n", state.B ? "BankB" : "BankA");
+	printf("\nMissionaries on BankA: %d", state.monks);
+	printf("\nCannibals on BankA: %d", state.devils);
+	printf("\nBoat is on %s\n", state.boat ? "BankB" : "BankA");
 }
 
 int isGoal(State state){
-	return state.M == 0
-		&& state.C == 0
-		&& state.B;
+	return state.monks == 0
+		&& state.devils == 0
+		&& state.boat == 0;
 }
 
 int compareState(State state1, State state2){
-	return state1.M == state2.M
-		&& state1.C == state2.C 
-		&& state1.B == state2.B;
+	return state1.monks == state2.monks
+		&& state1.devils == state2.devils 
+		&& state1.boat == state2.boat;
 }
 
 int isValidState(State state){
-	if(state.M < 0 || state.C < 0 || state.M > 3 || state.C > 3)
+	if(state.monks < 0 || state.devils < 0 || state.monks > 3 || state.devils > 3)
 		return 0;
-	if(state.M > 0 && state.M < state.C)
+	if(state.monks > 0 && state.monks < state.devils)
 		return 0;
-	if(numberOfMissionaries - state.M > 0 && numberOfMissionaries - state.M < numberOfCannibals - state.C)
+	if(numberOfMonks - state.monks > 0 && numberOfMonks - state.monks < numberOfDevils - state.devils)
 		return 0;
 	return 1;
 }
 
 int Move1M(State state, State *result){
 	*result = state;
-	if(state.B == BankA){
-		result->M -= 1;
-		result->B = BankB;
+	if(state.boat == BankA){
+		result->monks -= 1;
+		result->boat = BankB;
 	} else {
-		result->M += 1;
-		result->B = BankA;
+		result->monks += 1;
+		result->boat = BankA;
 	}
 	return isValidState(*result);
 }
 
 int Move2M(State state, State *result){
 	*result = state;
-	if(state.B == BankA){
-		result->M -= 2;
-		result->B = BankB;
+	if(state.boat == BankA){
+		result->monks -= 2;
+		result->boat = BankB;
 	} else {
-		result->M += 2;
-		result->B = BankA;
+		result->monks += 2;
+		result->boat = BankA;
 	}
 	return isValidState(*result);
 }
 
 int Move1C(State state, State *result){
 	*result = state;
-	if(state.B == BankA){
-		result->C -= 1;
-		result->B = BankB;
+	if(state.boat == BankA){
+		result->devils -= 1;
+		result->boat = BankB;
 	} else {
-		result->C += 1;
-		result->B = BankA;
+		result->devils += 1;
+		result->boat = BankA;
 	}
 	return isValidState(*result);
 }
 
 int Move2C(State state, State *result){
 	*result = state;
-	if(state.B == BankA){
-		result->C -= 2;
-		result->B = BankB;
+	if(state.boat == BankA){
+		result->devils -= 2;
+		result->boat = BankB;
 	} else {
-		result->C += 2;
-		result->B = BankA;
+		result->devils += 2;
+		result->boat = BankA;
 	}
 	return isValidState(*result);
 }
 
 int Move1M1C(State state, State *result){
 	*result = state;
-	if(state.B == BankA){
-		result->M -= 1;
-		result->C -= 1;
-		result->B = BankB;
+	if(state.boat == BankA){
+		result->monks -= 1;
+		result->devils -= 1;
+		result->boat = BankB;
 	} else {
-		result->M += 1;
-		result->C += 1;
-		result->B = BankA;
+		result->monks += 1;
+		result->devils += 1;
+		result->boat = BankA;
 	}
 	return isValidState(*result);
 }
@@ -133,18 +134,18 @@ typedef struct Node {
 	int no_act;
 } Node;
 
-int findState(State state, stack<Node*> list){
+int findState(State state, queue<Node*> list){
 	while(!list.empty()){
-		if(compareState(list.top()->state, state))
+		if(compareState(list.front()->state, state))
 			return 1;
 		list.pop();
 	}
 	return 0;
 }
 
-Node* DFS(State state){
-	stack<Node*> openList;
-	stack<Node*> closeList;
+Node* BFS(State state){
+	queue<Node*> openList;
+	queue<Node*> closeList;
 
 	Node* root = (Node*)malloc(sizeof(Node));
 	root->state = state;
@@ -154,7 +155,7 @@ Node* DFS(State state){
 	openList.push(root);
 
 	while(!openList.empty()){
-		Node* node = openList.top();
+		Node* node = openList.front();
 		openList.pop();
 		closeList.push(node);
 		
@@ -197,20 +198,7 @@ void printWaysToGoal(Node *node){
 int main(){
 
 	State state = {3, 3, BankA};
-
-	printWaysToGoal(DFS(state));
-
-	printf("\n\n\n");
-	State result;
-	printf("Trang thai bat dau\n");
-	printState(state);
-	for(int opt = 1; opt<=5; opt++){
-		int thuchien = callOperators(state, &result, opt);
-		if(thuchien == 1){
-			printf("Hanh dong %s thanh cong\n", action[opt] );
-			printState(result);
-		} else printf("Hanh dong %s KHONG thanh cong\n", action[opt]);
-	}
+	printWaysToGoal(BFS(state));
 
 	return 0;
 }

@@ -71,6 +71,8 @@ int moveRight(State state, State *result){
 	return 0;
 }
 
+
+
 int moveUp(State state, State *result){
 	*result = state;
 	if(state.rowRobot > 0){
@@ -181,13 +183,42 @@ void printWaysToGoal(Node *node){
 
 int main(){
 
-	int n = 4, m = 4;
-	int input[MAX_ROWS][MAX_COLS] = {
-		{2, 0, 0, 0},
-		{1, 1, 0, 1},
-		{0, 1, 0, 0},
-		{1, 1, 1, 3}
-	};
+	/* Input:
+	4 4
+	2 0 0 0
+	1 1 0 1
+	0 1 0 0
+	1 1 1 3
+	*/
+
+	FILE *f = freopen("maze.txt", "r", stdin);
+
+	int n, m;
+	scanf("%d %d", &n, &m);
+	int input[MAX_ROWS][MAX_COLS];
+	for(int i = 0; i < n; i++){
+		for(int j = 0; j < m; j++){
+			scanf("%d", &input[i][j]);
+		}
+	}
+
+	// for(int i = 0; i < n; i++){
+	// 	for(int j = 0; j < m; j++){
+	// 		printf("%d ", input[i][j]);
+	// 	}
+	// 	printf("\n");
+	// }
+
+
+
+
+	// int n = 4, m = 4;
+	// int input[MAX_ROWS][MAX_COLS] = {
+	// 	{2, 0, 0, 0},
+	// 	{1, 1, 0, 1},
+	// 	{0, 1, 0, 0},
+	// 	{1, 1, 1, 3}
+	// };
 
 	State state;
 	initState(&state, input, n, m);

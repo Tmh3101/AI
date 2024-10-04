@@ -22,9 +22,8 @@ typedef struct {
 } Constrains;
 
 void initContrains(Constrains *constrains){
-	int i, j;
-	for(i = 0; i < NB_ROWS * NB_COLUMNS; i++){
-		for(j = 0; j < NB_ROWS * NB_COLUMNS; j++){
+	for(int i = 0; i < NB_ROWS * NB_COLUMNS; i++){
+		for(int j = 0; j < NB_ROWS * NB_COLUMNS; j++){
 			constrains->data[i][j] = EMPTY;
 		}
 	}
@@ -156,7 +155,7 @@ vector<int> getAvailabelValues(Coord position, Sudoku sudoku){
 	}
 	
 	// Neu o co rang buoc voi o dang xet => gia tri cua o do khong co trong gia tri hop le cua o dang xet
-	for(int i = 0; i < posList.size(); i++){
+	for(size_t i = 0; i < posList.size(); i++){
 		Coord pos = posList.at(i);
 		if(sudoku.cells[pos.x][pos.y] != EMPTY)
 			available[sudoku.cells[pos.x][pos.y]] = 0;
@@ -176,15 +175,16 @@ vector<int> getAvailabelValues(Coord position, Sudoku sudoku){
 // Xac dinh o uu tien
 // Cach 1: o trong dau tien
 Coord getNextEmptyCell(Sudoku sudoku){
+	Coord pos = {-1, -1};
 	for(int i = 0; i < NB_ROWS; i++){
 		for(int j = 0; j < NB_COLUMNS; j++){
-			Coord pos = {i, j};
+			pos = {i, j};
 			if(sudoku.cells[i][j] == EMPTY)
 				return pos;
 		}
 	}
+	return pos;
 }
-
 
 // Cach 2: o co mien gia tri hop le it nhat
 Coord getNextMinDomainCell(Sudoku sudoku){
@@ -215,7 +215,7 @@ int sudokuBackTracking(Sudoku *sudoku){
 	
 	if(availables.size() == 0) return 0;
 	
-	for(int j = 0; j < availables.size(); j++){
+	for(size_t j = 0; j < availables.size(); j++){
 		int value = availables.at(j);
 		sudoku->cells[position.x][position.y] = value;
 		
